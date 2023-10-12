@@ -1,0 +1,104 @@
+---
+title: "dw_II_class_1"
+author: "Caleigh Dwyer"
+date: "2023-10-12"
+output: html_document
+---
+
+
+review from last class
+
+```{r}
+nyc_airbnb |> 
+  group_by(neighbourhood)
+  filter(
+    price <1000,
+    room_type == "Entire home/apt",
+    borough == "Manhattan") |> 
+  mutate(neighbourhood)
+  )
+
+##mutate remembers grouping, so the function won't work the way you intend, so never do it when you import the data, only do it as you're summarizing the data or creating plots.
+```
+
+
+##now to class work
+
+```{r}
+library(rvest)
+library(httr)
+library(tidyverse)
+```
+
+
+```{r import_nsduh}
+nsduh_url = "https://samhda.s3-us-gov-west-1.amazonaws.com/s3fs-public/field-uploads/2k15StateFiles/NSDUHsaeShortTermCHG2015.htm"
+
+nsduh_html =
+  read_html(nsduh_url)
+```
+
+import the tables from the html, this gives us all the tables:
+
+```{r}
+nsduh_html |> 
+  html_table()
+```
+
+```{r}
+marj_use_df =
+  nsduh_html |> 
+  html_table() |> 
+  first() |> 
+  view()
+```
+^^this gave us the first table. but we need to remove the first row in the df, which we use slice for below
+
+```{r}
+marj_use_df =
+  nsduh_html |> 
+  html_table() |> 
+  first() |> 
+  slice(-1) |> 
+  view() 
+
+```
+
+import star wars....
+
+```{r}
+swm_url = 
+  "https://www.imdb.com/list/ls070150896/"
+
+swm_html =
+  read_html(swm_url)
+```
+
+
+```{r}
+swm_title_vec
+swm_html |> 
+  html_elements(".lister-item-header a") |> 
+  html_text()
+
+##if you just do html elements, it will give you gobbledygook. You need to then pipe to html_text so that it can parse out the text.
+```
+
+to get elements, use selector gadget bookmark, then click on the element you want. then, click on any elements that the gadget has incorrectly tagged until you have everything that you want, then copy the CSS
+
+```{r}
+swm_gross_rev_vec=
+swm_html |> 
+  html_elements(":nth-child(7) span:nth-child(5)") |> 
+  html_text()
+```
+
+
+```{r}
+swm_df =
+  tibble(
+    title = swm_title_vec,
+    gross = swm_gross_rev_vec
+  )
+```
+Be mindful when you scrape from the web because whenever you download data it is a burden on their servers. for example, amazon knows when you try to scrape more than once and will shut you down. Also think about the ethics of it... chat gpt is built on web scraping
