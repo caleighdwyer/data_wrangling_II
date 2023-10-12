@@ -102,3 +102,38 @@ swm_df =
   )
 ```
 Be mindful when you scrape from the web because whenever you download data it is a burden on their servers. for example, amazon knows when you try to scrape more than once and will shut you down. Also think about the ethics of it... chat gpt is built on web scraping
+
+
+##APIs
+
+get water data from NYC
+
+```{r}
+nyc_water_df =
+  GET("https://data.cityofnewyork.us/resource/ia2d-e54m.csv") |> 
+  content("parsed") |> 
+  view()
+
+##you don't need parsed in this case, but it is helpful for importing columns thoughtfully
+```
+
+the link above is from the "API" button on the NYC water webpage
+
+```{r}
+brfss_df =
+  GET("insert_html_link",
+    query = list("$limit" = 500)) |> 
+  content()
+
+##limits in your query helps make sure you don't accidentally download 10 GB of data
+
+```
+
+
+```{r}
+poke_df =
+  GET("https://pokeapi.co/api/v2/pokemon/ditto")
+
+##some APIs give you a data rectangle, but a lot won't. this pokemon API just gives you a jumble of information
+```
+
