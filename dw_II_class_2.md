@@ -156,3 +156,84 @@ str_detect(string_vec, "\\[[0-9]")
 ##to find a special character, you have to use brackets to indicate what you're looking for, because otherwise str detect will interpret it functionally
 ##this is why people dont want you using special characters, because it's hard to detect
 ```
+
+\##factors
+
+``` r
+vec_sex = c("male", "male", "female", "female")
+vec_sex = factor(c("male", "male", "female", "female"))
+vec_sex
+```
+
+    ## [1] male   male   female female
+    ## Levels: female male
+
+``` r
+##notice differences when you run the two above. when a factor, values are no longer in "" and it indicates levels
+as.numeric(vec_sex)
+```
+
+    ## [1] 2 2 1 1
+
+``` r
+vec_sex = fct_relevel(vec_sex, "male")
+vec_sex
+```
+
+    ## [1] male   male   female female
+    ## Levels: male female
+
+``` r
+as.numeric(vec_sex)
+```
+
+    ## [1] 1 1 2 2
+
+``` r
+##use fct_relevel to reorder factors
+```
+
+\##NSDUH
+
+``` r
+nsduh_url = "http://samhda.s3-us-gov-west-1.amazonaws.com/s3fs-public/field-uploads/2k15StateFiles/NSDUHsaeShortTermCHG2015.htm"
+
+table_marj =
+  read_html(nsduh_url) |> 
+  html_table() |> 
+  first() |> 
+  slice(-1)
+```
+
+need to tidy this
+
+``` r
+marj_df =
+  table_marj |> 
+  select(-contains ("P Value")) |> 
+  pivot_longer(
+    -State,
+    names_to = "age_year",
+    values_to = "percent"
+  ) |> 
+  separate(age_year, into = c("age", "year"), "\\(") |> 
+  mutate(year = str_replace(year, "\\)", ""),
+percent = str_replace(percent, "[a-b]", ""),
+percent = as.numeric(percent)) |> 
+  filter(!(State %in% c("Total U.S.", "Northeast", "Midwest", "South", "West")))
+
+
+##pivot longer because age and year were a column name
+##now need to seaparate age and year
+```
+
+``` r
+marj_df |> 
+  filter(age == "18-25") |> 
+  mutate(State = fct_reorder(State, percent)) |> 
+  ggplot(aes(x = State, y = percent, color = year))+
+  geom_point()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+![](dw_II_class_2_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
